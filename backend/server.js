@@ -25,8 +25,21 @@ const limiter = rateLimit({
 app.use("/api", limiter); // Aplicar solo a rutas API
 
 // Middleware globales
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: function(origin, callback) {
+        // Permitir peticiones sin origin (Postman, etc.) y orígenes en la lista
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
